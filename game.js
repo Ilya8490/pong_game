@@ -21,6 +21,24 @@ let ball = {
     vy: BALL_SPEED * (Math.random() * 2 - 1)
 };
 let playerScore = 0, aiScore = 0;
+let isPaused = false;
+
+// Pause button support
+const pauseBtn = document.getElementById("pauseBtn");
+pauseBtn.addEventListener("click", () => {
+    isPaused = !isPaused;
+    pauseBtn.textContent = isPaused ? "Resume" : "Pause";
+    if (!isPaused) update();
+});
+
+// Spacebar support for pausing/resuming
+document.addEventListener("keydown", (e) => {
+    if (e.code === "Space") {
+        isPaused = !isPaused;
+        pauseBtn.textContent = isPaused ? "Resume" : "Pause";
+        if (!isPaused) update();
+    }
+});
 
 // Draw paddles, ball, and score
 function draw() {
@@ -129,6 +147,8 @@ canvas.addEventListener("mousemove", (e) => {
 
 // Game loop
 function update() {
+    if (isPaused) return;
+
     // Move ball
     ball.x += ball.vx;
     ball.y += ball.vy;
