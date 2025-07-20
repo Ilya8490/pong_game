@@ -9,7 +9,7 @@ const PLAYER_X = 20;
 const AI_X = canvas.width - 20 - PADDLE_WIDTH;
 const PADDLE_SPEED = 6;
 const AI_SPEED = 4;
-const BALL_SPEED = 6;
+const BALL_SPEED = 9;
 
 // Game state
 let playerY = canvas.height / 2 - PADDLE_HEIGHT / 2;
