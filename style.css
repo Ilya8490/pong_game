@@ -1,58 +1,157 @@
+:root {
+    color-scheme: dark;
+    --bg: #07111f;
+    --bg-glow: rgba(79, 209, 197, 0.2);
+    --panel: rgba(8, 18, 34, 0.82);
+    --panel-border: rgba(167, 243, 208, 0.2);
+    --text: #f3fbff;
+    --muted: #9fb8c9;
+    --accent: #7cf5d2;
+    --accent-strong: #35d8ff;
+    --shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+}
+
+* {
+    box-sizing: border-box;
+}
+
 body {
-    background: #181818;
-    color: #fff;
-    font-family: Arial, sans-serif;
-    text-align: center;
     margin: 0;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
+    padding: 32px 20px 48px;
+    background:
+        radial-gradient(circle at top, rgba(53, 216, 255, 0.16), transparent 34%),
+        radial-gradient(circle at bottom left, rgba(124, 245, 210, 0.18), transparent 28%),
+        linear-gradient(180deg, #0c1830 0%, var(--bg) 52%, #040a13 100%);
+    color: var(--text);
+    font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    text-align: center;
+    overflow-x: hidden;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 42px 42px;
+    mask-image: radial-gradient(circle at center, black 45%, transparent 100%);
 }
 
 h1 {
-    margin: 30px 0 0;
-    letter-spacing: 2px;
+    margin: 0;
+    font-size: clamp(2.1rem, 4.8vw, 4rem);
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    text-shadow:
+        0 0 18px rgba(124, 245, 210, 0.35),
+        0 0 32px rgba(53, 216, 255, 0.18);
 }
 
 #game-container {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
-    margin-top: 32px;
+    gap: 18px;
     width: min(92vw, 960px);
+    margin-top: 28px;
+    padding: 28px;
+    border: 1px solid var(--panel-border);
+    border-radius: 28px;
+    background: linear-gradient(180deg, rgba(10, 27, 46, 0.92), var(--panel));
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(14px);
+}
+
+#game-container::before {
+    content: "Arcade Mode";
+    align-self: stretch;
+    color: var(--muted);
+    font-size: 0.82rem;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
 }
 
 canvas {
-    background: #222;
-    border: 3px solid #fff;
-    border-radius: 8px;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
     width: 100%;
     max-width: 800px;
     aspect-ratio: 8 / 5;
     height: auto;
     display: block;
+    border: 3px solid rgba(243, 251, 255, 0.92);
+    border-radius: 20px;
+    background:
+        radial-gradient(circle at center, rgba(53, 216, 255, 0.06), transparent 52%),
+        linear-gradient(180deg, #0b1320 0%, #111a2b 100%);
+    box-shadow:
+        0 0 0 1px rgba(124, 245, 210, 0.12),
+        0 16px 48px rgba(0, 0, 0, 0.42),
+        0 0 28px rgba(53, 216, 255, 0.15);
 }
 
 #pauseBtn {
-    padding: 10px 18px;
-    border: 1px solid #fff;
+    position: relative;
+    padding: 12px 22px;
+    border: 1px solid rgba(124, 245, 210, 0.5);
     border-radius: 999px;
-    background: transparent;
-    color: #fff;
+    background: linear-gradient(180deg, rgba(124, 245, 210, 0.18), rgba(53, 216, 255, 0.08));
+    color: var(--text);
     font: inherit;
+    font-size: 0.98rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     cursor: pointer;
+    box-shadow:
+        0 10px 24px rgba(0, 0, 0, 0.28),
+        inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    transition:
+        transform 160ms ease,
+        box-shadow 160ms ease,
+        background 160ms ease;
 }
 
 #pauseBtn:hover {
-    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-1px);
+    background: linear-gradient(180deg, rgba(124, 245, 210, 0.28), rgba(53, 216, 255, 0.16));
+    box-shadow:
+        0 14px 28px rgba(0, 0, 0, 0.32),
+        0 0 20px rgba(124, 245, 210, 0.14);
+}
+
+#pauseBtn:active {
+    transform: translateY(1px);
+}
+
+#pauseBtn:focus-visible {
+    outline: 3px solid rgba(124, 245, 210, 0.45);
+    outline-offset: 4px;
 }
 
 @media (max-width: 640px) {
+    body {
+        padding: 22px 14px 32px;
+    }
+
+    #game-container {
+        padding: 18px;
+        border-radius: 22px;
+    }
+
     h1 {
-        font-size: 1.6rem;
-        padding: 0 16px;
+        font-size: 1.8rem;
+        letter-spacing: 0.18em;
+    }
+
+    #pauseBtn {
+        width: 100%;
+        max-width: 320px;
     }
 }
