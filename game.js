@@ -2,26 +2,74 @@ const canvas = document.getElementById("pongCanvas");
 const ctx = canvas.getContext("2d");
 
 // Game settings
+const BASE_WIDTH = 800;
+const BASE_HEIGHT = 500;
 const PADDLE_WIDTH = 12;
 const PADDLE_HEIGHT = 90;
 const BALL_RADIUS = 12;
 const PLAYER_X = 20;
-const AI_X = canvas.width - 20 - PADDLE_WIDTH;
 const PADDLE_SPEED = 6;
 const AI_SPEED = 4;
 const BALL_SPEED = 9;
+const MAX_DPR = 2;
+
+let gameWidth = BASE_WIDTH;
+let gameHeight = BASE_HEIGHT;
+
+function getAiX() {
+    return gameWidth - 19 - PADDLE_WIDTH;
+}
+
+function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+}
+
+function resizeCanvas() {
+    const nextWidth = canvas.clientWidth || BASE_WIDTH;
+    const nextHeight = canvas.clientHeight || BASE_HEIGHT;
+    const prevWidth = gameWidth;
+    const prevHeight = gameHeight;
+    const dpr = Math.min(window.devicePixelRatio || 1, MAX_DPR);
+
+    canvas.width = Math.round(nextWidth * dpr);
+    canvas.height = Math.round(nextHeight * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    gameWidth = nextWidth;
+    gameHeight = nextHeight;
+
+    if (prevWidth > 0 && prevHeight > 0) {
+        const widthRatio = gameWidth / prevWidth;
+        const heightRatio = gameHeight / prevHeight;
+
+        playerY *= heightRatio;
+        aiY *= heightRatio;
+        ball.x *= widthRatio;
+        ball.y *= heightRatio;
+    }
+
+    playerY = clamp(playerY, 0, gameHeight - PADDLE_HEIGHT);
+    aiY = clamp(aiY, 0, gameHeight - PADDLE_HEIGHT);
+    ball.x = clamp(ball.x, BALL_RADIUS, gameWidth - BALL_RADIUS);
+    ball.y = clamp(ball.y, BALL_RADIUS, gameHeight - BALL_RADIUS);
+
+    draw();
+}
 
 // Game state
-let playerY = canvas.height / 2 - PADDLE_HEIGHT / 2;
-let aiY = canvas.height / 2 - PADDLE_HEIGHT / 2;
+let playerY = gameHeight / 2 - PADDLE_HEIGHT / 2;
+let aiY = gameHeight / 2 - PADDLE_HEIGHT / 2;
 let ball = {
-    x: canvas.width / 2,
-    y: canvas.height / 2,
+    x: gameWidth / 2,
+    y: gameHeight / 2,
     vx: BALL_SPEED * (Math.random() < 0.5 ? 1 : -1),
     vy: BALL_SPEED * (Math.random() * 2 - 1)
 };
 let playerScore = 0, aiScore = 0;
 let isPaused = false;
+
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
 
 // Pause button support
 const pauseBtn = document.getElementById("pauseBtn");
@@ -42,14 +90,14 @@ document.addEventListener("keydown", (e) => {
 
 // Draw paddles, ball, and score
 function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, gameWidth, gameHeight);
 
     // Middle line
     ctx.strokeStyle = "#555";
     ctx.setLineDash([14, 18]);
     ctx.beginPath();
-    ctx.moveTo(canvas.width / 2, 0);
-    ctx.lineTo(canvas.width / 2, canvas.height);
+    ctx.moveTo(gameWidth / 2, 0);
+    ctx.lineTo(gameWidth / 2, gameHeight);
     ctx.stroke();
     ctx.setLineDash([]);
 
@@ -58,7 +106,7 @@ function draw() {
     ctx.fillRect(PLAYER_X, playerY, PADDLE_WIDTH, PADDLE_HEIGHT);
 
     // AI paddle
-    ctx.fillRect(AI_X, aiY, PADDLE_WIDTH, PADDLE_HEIGHT);
+    ctx.fillRect(getAiX(), aiY, PADDLE_WIDTH, PADDLE_HEIGHT);
 
     // Ball
     ctx.beginPath();
@@ -67,14 +115,14 @@ function draw() {
 
     // Score
     ctx.font = "32px Arial";
-    ctx.fillText(playerScore, canvas.width / 2 - 60, 48);
-    ctx.fillText(aiScore, canvas.width / 2 + 32, 48);
+    ctx.fillText(playerScore, gameWidth / 2 - 60, 48);
+    ctx.fillText(aiScore, gameWidth / 2 + 32, 48);
 }
 
 // Ball and paddle collision
 function checkCollision() {
     // Top and bottom wall
-    if (ball.y - BALL_RADIUS <= 0 || ball.y + BALL_RADIUS >= canvas.height) {
+    if (ball.y - BALL_RADIUS <= 0 || ball.y + BALL_RADIUS >= gameHeight) {
         ball.vy = -ball.vy;
     }
 
@@ -95,7 +143,7 @@ function checkCollision() {
 
     // AI paddle
     if (
-        ball.x + BALL_RADIUS >= AI_X &&
+        ball.x + BALL_RADIUS >= getAiX() &&
         ball.y + BALL_RADIUS > aiY &&
         ball.y - BALL_RADIUS < aiY + PADDLE_HEIGHT &&
         ball.vx > 0
@@ -112,15 +160,15 @@ function checkCollision() {
     if (ball.x - BALL_RADIUS < 0) {
         aiScore++;
         resetBall();
-    } else if (ball.x + BALL_RADIUS > canvas.width) {
+    } else if (ball.x + BALL_RADIUS > gameWidth) {
         playerScore++;
         resetBall();
     }
 }
 
 function resetBall() {
-    ball.x = canvas.width / 2;
-    ball.y = canvas.height / 2;
+    ball.x = gameWidth / 2;
+    ball.y = gameHeight / 2;
     ball.vx = BALL_SPEED * (Math.random() < 0.5 ? 1 : -1);
     ball.vy = BALL_SPEED * (Math.random() * 2 - 1);
 }
@@ -134,7 +182,7 @@ function moveAI() {
         aiY -= AI_SPEED;
     }
     // Clamp AI within canvas
-    aiY = Math.max(0, Math.min(canvas.height - PADDLE_HEIGHT, aiY));
+    aiY = clamp(aiY, 0, gameHeight - PADDLE_HEIGHT);
 }
 
 // Mouse control for player paddle
@@ -142,7 +190,7 @@ canvas.addEventListener("mousemove", (e) => {
     const rect = canvas.getBoundingClientRect();
     const mouseY = e.clientY - rect.top;
     playerY = mouseY - PADDLE_HEIGHT / 2;
-    playerY = Math.max(0, Math.min(canvas.height - PADDLE_HEIGHT, playerY));
+    playerY = clamp(playerY, 0, gameHeight - PADDLE_HEIGHT);
 });
 
 // Game loop
